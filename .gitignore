@@ -13,5 +13,11 @@
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 .glide/
 
-kubeconfig
-main
+/kubeconfig
+/main
+
+/bin
+/.go
+/.push-*
+/.container-*
+/.dockerfile-*
