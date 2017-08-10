@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"k8s.io/apimachinery/pkg/util/runtime"
-	"k8s.io/client-go/informers"
+	informercorev1 "k8s.io/client-go/informers/core/v1"
 	"k8s.io/client-go/kubernetes"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	listercorev1 "k8s.io/client-go/listers/core/v1"
@@ -17,15 +17,14 @@ type TGIKController struct {
 	podListerSynced cache.InformerSynced
 }
 
-func NewTGIKController(client *kubernetes.Clientset, informerFactory informers.SharedInformerFactory) *TGIKController {
-	informer := informerFactory.Core().V1().Pods()
+func NewTGIKController(client *kubernetes.Clientset, podInformer informercorev1.PodInformer) *TGIKController {
 	c := &TGIKController{
 		podGetter:       client.CoreV1(),
-		podLister:       informer.Lister(),
-		podListerSynced: informer.Informer().HasSynced,
+		podLister:       podInformer.Lister(),
+		podListerSynced: podInformer.Informer().HasSynced,
 	}
 
-	informer.Informer().AddEventHandler(
+	podInformer.Informer().AddEventHandler(
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				c.onAdd(obj)

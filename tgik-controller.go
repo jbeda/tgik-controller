@@ -39,7 +39,8 @@ func main() {
 	client := kubernetes.NewForConfigOrDie(config)
 
 	sharedInformers := informers.NewSharedInformerFactory(client, 10*time.Minute)
+	tgikController := NewTGIKController(client, sharedInformers.Core().V1().Pods())
 
-	tgikController := NewTGIKController(client, sharedInformers)
+	sharedInformers.Start(nil)
 	tgikController.Run(nil)
 }
