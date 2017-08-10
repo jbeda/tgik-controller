@@ -3,15 +3,20 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
+	"time"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/jbeda/tgik-controller/version"
+
+	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
 func main() {
+	log.Printf("tgik-controller version %s", version.VERSION)
 	kubeconfig := ""
 	flag.StringVar(&kubeconfig, "kubeconfig", kubeconfig, "kubeconfig file")
 	flag.Parse()
@@ -32,12 +37,9 @@ func main() {
 		os.Exit(1)
 	}
 	client := kubernetes.NewForConfigOrDie(config)
-	list, err := client.CoreV1().Nodes().List(metav1.ListOptions{})
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "error listing nodes: %v", err)
-		os.Exit(1)
-	}
-	for _, node := range list.Items {
-		fmt.Printf("Node: %s\n", node.Name)
-	}
+
+	sharedInformers := informers.NewSharedInformerFactory(client, 10*time.Minute)
+
+	tgikController := NewTGIKController(client, sharedInformers)
+	tgikController.Run(nil)
 }
