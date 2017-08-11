@@ -17,6 +17,7 @@ import (
 
 func main() {
 	log.Printf("tgik-controller version %s", version.VERSION)
+
 	kubeconfig := ""
 	flag.StringVar(&kubeconfig, "kubeconfig", kubeconfig, "kubeconfig file")
 	flag.Parse()
@@ -39,7 +40,7 @@ func main() {
 	client := kubernetes.NewForConfigOrDie(config)
 
 	sharedInformers := informers.NewSharedInformerFactory(client, 10*time.Minute)
-	tgikController := NewTGIKController(client, sharedInformers.Core().V1().Pods())
+	tgikController := NewTGIKController(client, sharedInformers.Core().V1().Secrets(), sharedInformers.Core().V1().Namespaces())
 
 	sharedInformers.Start(nil)
 	tgikController.Run(nil)
